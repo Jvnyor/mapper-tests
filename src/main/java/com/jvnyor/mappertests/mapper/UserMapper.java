@@ -6,6 +6,7 @@ import com.jvnyor.mappertests.entity.User;
 import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,21 +28,24 @@ public class UserMapper {
 
     public static User updateExistingUserFromDTO(UserDTOToUpdate userDTOToUpdate, User existingUser) {
         if (userDTOToUpdate == null) {
-            return existingUser;
+            return null;
         }
         BeanUtils.copyProperties(userDTOToUpdate, existingUser);
         return existingUser;
     }
 
-    public static List<User> createUsersFromDTOs(List<UserDTOToCreate> userDTOToCreates) {
-        return userDTOToCreates.stream()
+    public static List<User> createUsersFromDTOs(List<UserDTOToCreate> userDTOsToCreate) {
+        if (userDTOsToCreate == null || userDTOsToCreate.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return userDTOsToCreate.stream()
                 .map(UserMapper::createUserFromDTO)
                 .toList();
     }
 
     public static List<User> updateExistingUsersFromDTOsWithMap(List<UserDTOToUpdate> userDTOsToUpdate, List<User> existingUsers) {
         if (userDTOsToUpdate == null || userDTOsToUpdate.isEmpty()) {
-            return existingUsers;
+            return Collections.emptyList();
         }
 
         Map<Long, UserDTOToUpdate> dtoMap = userDTOsToUpdate.stream()
@@ -49,7 +53,7 @@ public class UserMapper {
 
         return existingUsers.stream()
                 .map(user -> {
-                    UserDTOToUpdate dto = dtoMap.get(user.getId());
+                    var dto = dtoMap.get(user.getId());
                     if (dto != null) {
                         return updateExistingUserFromDTO(dto, user);
                     } else {
@@ -61,7 +65,7 @@ public class UserMapper {
 
     public static List<User> updateExistingUsersFromDTOsWithFor(List<UserDTOToUpdate> userDTOsToUpdate, List<User> existingUsers) {
         if (userDTOsToUpdate == null || userDTOsToUpdate.isEmpty()) {
-            return existingUsers;
+            return Collections.emptyList();
         }
 
         Map<Long, User> userMap = existingUsers.stream()
@@ -69,7 +73,7 @@ public class UserMapper {
 
         List<User> updatedUsers = new ArrayList<>();
         for (UserDTOToUpdate dto : userDTOsToUpdate) {
-            User user = userMap.get(dto.id());
+            var user = userMap.get(dto.id());
             if (user != null) {
                 updatedUsers.add(updateExistingUserFromDTO(dto, user));
             }

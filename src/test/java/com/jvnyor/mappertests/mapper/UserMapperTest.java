@@ -5,9 +5,13 @@ import com.jvnyor.mappertests.dto.UserDTOToUpdate;
 import com.jvnyor.mappertests.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,7 +48,7 @@ class UserMapperTest {
     }
 
     @Test
-    void givenUserDTO_whenCreateUserFromDTO_thenReturnUser() {
+    void givenUserDTOToCreate_whenCreateUserFromDTO_thenReturnCreatedUser() {
         var userEntity = UserMapper.createUserFromDTO(userDTOsToCreate);
         assertAll(
                 () -> assertNull(userEntity.getId()),
@@ -56,7 +60,12 @@ class UserMapperTest {
     }
 
     @Test
-    void givenExistingUserAndUserDTO_whenUpdateExistingUserFromDTO_thenUpdateUser() {
+    void givenNullUserDTO_whenCreateUserFromDTO_thenReturnNull() {
+        assertNull(UserMapper.createUserFromDTO(null));
+    }
+
+    @Test
+    void givenExistingUserAndUserDTOToUpdate_whenUpdateExistingUserFromDTO_thenReturnUpdatedUser() {
         var existingUser = new User();
         existingUser.setId(1L);
         existingUser.setName("Jane Doe");
@@ -75,7 +84,13 @@ class UserMapperTest {
     }
 
     @Test
-    void givenUserDTOs_whenCreateUsersFromDTOs_thenReturnUsers() {
+    void givenExistingUserAndNullUserDTOToCreate_whenUpdateExistingUserFromDTO_thenReturnNull() {
+        var existingUser = new User();
+        assertNull(UserMapper.updateExistingUserFromDTO(null, existingUser));
+    }
+
+    @Test
+    void givenUserDTOsToCreate_whenCreateUsersFromDTOs_thenReturnUsers() {
         var userEntities = UserMapper.createUsersFromDTOs(List.of(userDTOsToCreate));
         var userEntity = userEntities.get(0);
         assertAll(
@@ -85,6 +100,20 @@ class UserMapperTest {
                 () -> assertEquals(userDTOsToCreate.email(), userEntity.getEmail()),
                 () -> assertEquals(userDTOsToCreate.password(), userEntity.getPassword()),
                 () -> assertEquals(userDTOsToCreate.roles(), userEntity.getRoles())
+        );
+    }
+
+    @MethodSource("provideParametersForCreateOrUpdateUsersFromDTOsTest")
+    @ParameterizedTest
+    void givenNullOrEmptyListOfUserDTOToCreate_whenCreateUsersFromDTOs_thenReturnEmptyList(List<UserDTOToCreate> userDTOToCreates) {
+        var userEntities = UserMapper.createUsersFromDTOs(userDTOToCreates);
+        assertTrue(userEntities.isEmpty());
+    }
+
+    static Stream<Arguments> provideParametersForCreateOrUpdateUsersFromDTOsTest() {
+        return Stream.of(
+                Arguments.of((Object) null),
+                Arguments.of(Collections.emptyList())
         );
     }
 
@@ -109,6 +138,19 @@ class UserMapperTest {
         );
     }
 
+    @MethodSource("provideParametersForCreateOrUpdateUsersFromDTOsTest")
+    @ParameterizedTest
+    void givenNullOrEmptyListOfUserDTOToUpdateAndExistingUsers_whenUpdateExistingUsersFromDTOsWithMap_thenReturnEmptyList(List<UserDTOToUpdate> userDTOsToUpdate) {
+        var existingUsers = List.of(
+                new User(),
+                new User()
+        );
+        existingUsers.get(0).setId(1L);
+        existingUsers.get(1).setId(2L);
+        var usersUpdated = UserMapper.updateExistingUsersFromDTOsWithMap(userDTOsToUpdate, existingUsers);
+        assertTrue(usersUpdated.isEmpty());
+    }
+
     @Test
     void givenUserDTOsToUpdateAndExistingUsers_whenUpdateExistingUsersFromDTOsWithFor_thenReturnUpdateUsers() {
         var existingUsers = List.of(
@@ -128,5 +170,18 @@ class UserMapperTest {
                 () -> assertEquals(userDTOsToUpdate.get(1).password(), usersUpdated.get(1).getPassword()),
                 () -> assertEquals(userDTOsToUpdate.get(1).roles(), usersUpdated.get(1).getRoles())
         );
+    }
+
+    @MethodSource("provideParametersForCreateOrUpdateUsersFromDTOsTest")
+    @ParameterizedTest
+    void givenNullOrEmptyListOfUserDTOToUpdateAndExistingUsers_whenUpdateExistingUsersFromDTOsWithFor_thenReturnEmptyList(List<UserDTOToUpdate> userDTOsToUpdate) {
+        var existingUsers = List.of(
+                new User(),
+                new User()
+        );
+        existingUsers.get(0).setId(1L);
+        existingUsers.get(1).setId(2L);
+        var usersUpdated = UserMapper.updateExistingUsersFromDTOsWithFor(userDTOsToUpdate, existingUsers);
+        assertTrue(usersUpdated.isEmpty());
     }
 }

@@ -3,12 +3,14 @@ package com.jvnyor.mappertests.mapper;
 import com.jvnyor.mappertests.dto.UserDTOToCreate;
 import com.jvnyor.mappertests.dto.UserDTOToUpdate;
 import com.jvnyor.mappertests.entity.User;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-@Slf4j
 public class UserMapper {
 
     private UserMapper() {
@@ -23,11 +25,12 @@ public class UserMapper {
         return user;
     }
 
-    public static void updateExistingUserFromDTO(UserDTOToUpdate userDTOToUpdate, User existingUser) {
-        if (userDTOToUpdate == null || existingUser == null) {
-            return;
+    public static User updateExistingUserFromDTO(UserDTOToUpdate userDTOToUpdate, User existingUser) {
+        if (userDTOToUpdate == null) {
+            return existingUser;
         }
         BeanUtils.copyProperties(userDTOToUpdate, existingUser);
+        return existingUser;
     }
 
     public static List<User> createUsersFromDTOs(List<UserDTOToCreate> userDTOToCreates) {
@@ -36,31 +39,42 @@ public class UserMapper {
                 .toList();
     }
 
-    public static void updateExistingUsersFromDTOsWithMap(List<UserDTOToUpdate> userDTOsToUpdate, List<User> existingUsers) {
-        if (userDTOsToUpdate == null || existingUsers == null) {
-            return;
+    public static List<User> updateExistingUsersFromDTOsWithMap(List<UserDTOToUpdate> userDTOsToUpdate, List<User> existingUsers) {
+        if (userDTOsToUpdate == null || userDTOsToUpdate.isEmpty()) {
+            return existingUsers;
         }
-        long updatedUsersCount = existingUsers.stream()
-                .flatMap(user -> userDTOsToUpdate.stream()
-                        .filter(dto -> dto.id().equals(user.getId()))
-                        .findFirst()
-                        .map(dto -> {
-                            updateExistingUserFromDTO(dto, user);
-                            return user;
-                        })
-                        .stream())
-                .count();
-        log.info("Updated users size: {}", updatedUsersCount);
+
+        Map<Long, UserDTOToUpdate> dtoMap = userDTOsToUpdate.stream()
+                .collect(Collectors.toMap(UserDTOToUpdate::id, Function.identity()));
+
+        return existingUsers.stream()
+                .map(user -> {
+                    UserDTOToUpdate dto = dtoMap.get(user.getId());
+                    if (dto != null) {
+                        return updateExistingUserFromDTO(dto, user);
+                    } else {
+                        return user;
+                    }
+                })
+                .toList();
     }
 
-    public static void updateExistingUsersFromDTOsWithFor(List<UserDTOToUpdate> userDTOsToUpdate, List<User> existingUsers) {
-        if (userDTOsToUpdate == null || existingUsers == null) {
-            return;
+    public static List<User> updateExistingUsersFromDTOsWithFor(List<UserDTOToUpdate> userDTOsToUpdate, List<User> existingUsers) {
+        if (userDTOsToUpdate == null || userDTOsToUpdate.isEmpty()) {
+            return existingUsers;
         }
-        userDTOsToUpdate.forEach(userDTOToUpdate -> existingUsers.stream()
-                .filter(u -> u.getId().equals(userDTOToUpdate.id()))
-                .findFirst()
-                .ifPresent(user -> updateExistingUserFromDTO(userDTOToUpdate, user)));
-        log.info("Updated users size: {}", existingUsers.size());
+
+        Map<Long, User> userMap = existingUsers.stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        List<User> updatedUsers = new ArrayList<>();
+        for (UserDTOToUpdate dto : userDTOsToUpdate) {
+            User user = userMap.get(dto.id());
+            if (user != null) {
+                updatedUsers.add(updateExistingUserFromDTO(dto, user));
+            }
+        }
+
+        return updatedUsers;
     }
 }

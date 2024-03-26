@@ -57,23 +57,21 @@ class UserMapperTest {
 
     @Test
     void givenExistingUserAndUserDTO_whenUpdateExistingUserFromDTO_thenUpdateUser() {
-        assertDoesNotThrow(() -> {
-            var existingUser = new User();
-            existingUser.setId(1L);
-            existingUser.setName("Jane Doe");
-            existingUser.setEmail("");
-            existingUser.setPassword("");
-            existingUser.setRoles(Collections.emptyList());
-            var userDTOToUpdate = userDTOsToUpdate.get(0);
-            UserMapper.updateExistingUserFromDTO(userDTOToUpdate, existingUser);
-            assertAll(
-                    () -> assertEquals(userDTOToUpdate.id(), existingUser.getId()),
-                    () -> assertEquals(userDTOToUpdate.name(), existingUser.getName()),
-                    () -> assertEquals(userDTOToUpdate.email(), existingUser.getEmail()),
-                    () -> assertEquals(userDTOToUpdate.password(), existingUser.getPassword()),
-                    () -> assertEquals(userDTOToUpdate.roles(), existingUser.getRoles())
-            );
-        });
+        var existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setName("Jane Doe");
+        existingUser.setEmail("");
+        existingUser.setPassword("");
+        existingUser.setRoles(Collections.emptyList());
+        var userDTOToUpdate = userDTOsToUpdate.get(0);
+        var userUpdated = UserMapper.updateExistingUserFromDTO(userDTOToUpdate, existingUser);
+        assertAll(
+                () -> assertEquals(userDTOToUpdate.id(), userUpdated.getId()),
+                () -> assertEquals(userDTOToUpdate.name(), userUpdated.getName()),
+                () -> assertEquals(userDTOToUpdate.email(), userUpdated.getEmail()),
+                () -> assertEquals(userDTOToUpdate.password(), userUpdated.getPassword()),
+                () -> assertEquals(userDTOToUpdate.roles(), userUpdated.getRoles())
+        );
     }
 
     @Test
@@ -91,48 +89,44 @@ class UserMapperTest {
     }
 
     @Test
-    void givenUserDTOsToUpdateAndExistingUsers_whenUpdateExistingUsersFromDTOsWithMap_thenUpdateUsers() {
-        assertDoesNotThrow(() -> {
-            var existingUsers = List.of(
-                    new User(),
-                    new User()
-            );
-            existingUsers.get(0).setId(1L);
-            existingUsers.get(1).setId(2L);
-            UserMapper.updateExistingUsersFromDTOsWithMap(userDTOsToUpdate, existingUsers);
-            assertAll(
-                    () -> assertEquals(userDTOsToUpdate.get(0).name(), existingUsers.get(0).getName()),
-                    () -> assertEquals(userDTOsToUpdate.get(0).email(), existingUsers.get(0).getEmail()),
-                    () -> assertEquals(userDTOsToUpdate.get(0).password(), existingUsers.get(0).getPassword()),
-                    () -> assertEquals(userDTOsToUpdate.get(0).roles(), existingUsers.get(0).getRoles()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).name(), existingUsers.get(1).getName()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).email(), existingUsers.get(1).getEmail()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).password(), existingUsers.get(1).getPassword()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).roles(), existingUsers.get(1).getRoles())
-            );
-        });
+    void givenUserDTOsToUpdateAndExistingUsers_whenUpdateExistingUsersFromDTOsWithMap_thenReturnUpdateUsers() {
+        var existingUsers = List.of(
+                new User(),
+                new User()
+        );
+        existingUsers.get(0).setId(1L);
+        existingUsers.get(1).setId(2L);
+        var usersUpdated = UserMapper.updateExistingUsersFromDTOsWithMap(userDTOsToUpdate, existingUsers);
+        assertAll(
+                () -> assertEquals(userDTOsToUpdate.get(0).name(), usersUpdated.get(0).getName()),
+                () -> assertEquals(userDTOsToUpdate.get(0).email(), usersUpdated.get(0).getEmail()),
+                () -> assertEquals(userDTOsToUpdate.get(0).password(), usersUpdated.get(0).getPassword()),
+                () -> assertEquals(userDTOsToUpdate.get(0).roles(), usersUpdated.get(0).getRoles()),
+                () -> assertEquals(userDTOsToUpdate.get(1).name(), usersUpdated.get(1).getName()),
+                () -> assertEquals(userDTOsToUpdate.get(1).email(), usersUpdated.get(1).getEmail()),
+                () -> assertEquals(userDTOsToUpdate.get(1).password(), usersUpdated.get(1).getPassword()),
+                () -> assertEquals(userDTOsToUpdate.get(1).roles(), usersUpdated.get(1).getRoles())
+        );
     }
 
     @Test
-    void givenUserDTOsToUpdateAndExistingUsers_whenUpdateExistingUsersFromDTOsWithFor_thenUpdateUsers() {
-        assertDoesNotThrow(() -> {
-            var existingUsers = List.of(
-                    new User(),
-                    new User()
-            );
-            existingUsers.get(0).setId(1L);
-            existingUsers.get(1).setId(2L);
-            UserMapper.updateExistingUsersFromDTOsWithFor(userDTOsToUpdate, existingUsers);
-            assertAll(
-                    () -> assertEquals(userDTOsToUpdate.get(0).name(), existingUsers.get(0).getName()),
-                    () -> assertEquals(userDTOsToUpdate.get(0).email(), existingUsers.get(0).getEmail()),
-                    () -> assertEquals(userDTOsToUpdate.get(0).password(), existingUsers.get(0).getPassword()),
-                    () -> assertEquals(userDTOsToUpdate.get(0).roles(), existingUsers.get(0).getRoles()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).name(), existingUsers.get(1).getName()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).email(), existingUsers.get(1).getEmail()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).password(), existingUsers.get(1).getPassword()),
-                    () -> assertEquals(userDTOsToUpdate.get(1).roles(), existingUsers.get(1).getRoles())
-            );
-        });
+    void givenUserDTOsToUpdateAndExistingUsers_whenUpdateExistingUsersFromDTOsWithFor_thenReturnUpdateUsers() {
+        var existingUsers = List.of(
+                new User(),
+                new User()
+        );
+        existingUsers.get(0).setId(1L);
+        existingUsers.get(1).setId(2L);
+        var usersUpdated = UserMapper.updateExistingUsersFromDTOsWithFor(userDTOsToUpdate, existingUsers);
+        assertAll(
+                () -> assertEquals(userDTOsToUpdate.get(0).name(), usersUpdated.get(0).getName()),
+                () -> assertEquals(userDTOsToUpdate.get(0).email(), usersUpdated.get(0).getEmail()),
+                () -> assertEquals(userDTOsToUpdate.get(0).password(), usersUpdated.get(0).getPassword()),
+                () -> assertEquals(userDTOsToUpdate.get(0).roles(), usersUpdated.get(0).getRoles()),
+                () -> assertEquals(userDTOsToUpdate.get(1).name(), usersUpdated.get(1).getName()),
+                () -> assertEquals(userDTOsToUpdate.get(1).email(), usersUpdated.get(1).getEmail()),
+                () -> assertEquals(userDTOsToUpdate.get(1).password(), usersUpdated.get(1).getPassword()),
+                () -> assertEquals(userDTOsToUpdate.get(1).roles(), usersUpdated.get(1).getRoles())
+        );
     }
 }
